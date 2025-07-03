@@ -1,41 +1,125 @@
-import React, { useState } from "react";
-import "./Login.css";
+import React, { useState, useEffect } from 'react';
+import { Gift, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { useNavigate, useLocation } from 'react-router-dom';
+import './Login.css';
 
-const Login: React.FC = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+const LoginPage: React.FC = () => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState('');
+  const { login, isLoading, user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const from = location.state?.from?.pathname || '/dashboard';
+
+  useEffect(() => {
+    if (user) {
+      navigate(from, { replace: true });
+    }
+  }, [user, navigate, from]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert(`Email: ${email}\nPassword: ${password}`);
+    setError('');
+    
+    const success = await login(email, password);
+    if (!success) {
+      setError('Invalid credentials. Try admin@giftdash.com / password');
+    } else {
+      navigate(from, { replace: true });
+    }
   };
 
   return (
-    <div className="login-container">
-      <form className="login-form" onSubmit={handleSubmit}>
-        <h2>Login</h2>
-        <label htmlFor="email">Email</label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+    <div className="login-page">
+      <div className="login-background"></div>
+      
+      <div className="login-card">
+        <div className="text-center mb-8">
+          <div className="login-icon">
+            <Gift className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="text-3xl font-bold text-white mb-2">GiftDash</h1>
+          <p className="text-white" style={{ opacity: 0.7 }}>Manage your monthly gift deliveries</p>
+        </div>
 
-        <label htmlFor="password">Password</label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-4">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0" style={{ paddingLeft: '0.75rem', display: 'flex', alignItems: 'center', pointerEvents: 'none' }}>
+                <Mail className="h-5 w-5" style={{ color: 'rgba(255, 255, 255, 0.4)' }} />
+              </div>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="login-input"
+                placeholder="Email address"
+                required
+              />
+            </div>
 
-        <button type="submit">Log In</button>
-      </form>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0" style={{ paddingLeft: '0.75rem', display: 'flex', alignItems: 'center', pointerEvents: 'none' }}>
+                <Lock className="h-5 w-5" style={{ color: 'rgba(255, 255, 255, 0.4)' }} />
+              </div>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="login-input"
+                style={{ paddingRight: '3rem' }}
+                placeholder="Password"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0"
+                style={{ paddingRight: '0.75rem', display: 'flex', alignItems: 'center', background: 'none', border: 'none', cursor: 'pointer' }}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5" style={{ color: 'rgba(255, 255, 255, 0.4)' }} />
+                ) : (
+                  <Eye className="h-5 w-5" style={{ color: 'rgba(255, 255, 255, 0.4)' }} />
+                )}
+              </button>
+            </div>
+          </div>
+
+          {error && (
+            <div className="error-message">
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="login-button"
+          >
+            {isLoading ? (
+              <div className="flex items-center justify-center">
+                <div className="loading-spinner"></div>
+                Signing in...
+              </div>
+            ) : (
+              'Sign In'
+            )}
+          </button>
+        </form>
+
+        <div className="mt-6 text-center">
+          <p className="text-sm" style={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+            Demo credentials: admin@giftdash.com / password
+          </p>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default Login;
+export default LoginPage;
