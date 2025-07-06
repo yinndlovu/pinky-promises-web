@@ -24,7 +24,6 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
 
   const [recipient, setRecipient] = useState<Recipient | null>(null);
-  const [recipientLoading, setRecipientLoading] = useState(false);
   const [showAddRecipient, setShowAddRecipient] = useState(false);
   const [newRecipientName, setNewRecipientName] = useState("");
   const [addRecipientLoading, setAddRecipientLoading] = useState(false);
@@ -44,12 +43,10 @@ const Dashboard: React.FC = () => {
   const [sendGiftLoading, setSendGiftLoading] = useState(false);
 
   useEffect(() => {
-    setRecipientLoading(true);
     recipientService
       .getRecipient()
       .then(setRecipient)
       .catch(() => setRecipient(null))
-      .finally(() => setRecipientLoading(false));
   }, []);
 
   useEffect(() => {
