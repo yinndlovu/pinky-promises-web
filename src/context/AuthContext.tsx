@@ -1,12 +1,14 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import type { User } from '../types';
+import type { Admin } from '../types';
+import { adminAuthService } from '../services/adminAuthService';
 
 interface AuthContextType {
-  user: User | null;
+  admin: Admin | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
+  checkAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,37 +26,60 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [admin, setAdmin] = useState<Admin | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  const checkAuth = async () => {
+    try {
+      const adminData = await adminAuthService.getCurrentAdmin();
+      if (adminData) {
+        setAdmin(adminData);
+      }
+    } catch (error) {
+      console.error('Auth check failed:', error);
+      setAdmin(null);
+    }
+  };
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Mock authentication - in production, this would be a real API call
-    if (email === 'admin@giftdash.com' && password === 'password') {
-      setUser({
-        id: '1',
-        name: 'Gift Master',
-        email: 'admin@giftdash.com',
-        avatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop'
-      });
+    try {
+      const response = await adminAuthService.login(email, password);
+      
+      const adminData: Admin = {
+        id: response.adminId,
+        adminId: response.adminId,
+        name: response.name,
+        email: response.email,
+      };
+      
+      setAdmin(adminData);
       setIsLoading(false);
       return true;
+    } catch (error: any) {
+      setIsLoading(false);
+      console.error('Login error:', error);
+      throw error;
     }
-    
-    setIsLoading(false);
-    return false;
   };
 
-  const logout = () => {
-    setUser(null);
+  const logout = async () => {
+    try {
+      await adminAuthService.logout();
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setAdmin(null);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ admin, login, logout, isLoading, checkAuth }}>
       {children}
     </AuthContext.Provider>
   );

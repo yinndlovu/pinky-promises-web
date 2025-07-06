@@ -1,104 +1,136 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Gift, 
-  User, 
-  Clock, 
-  Plus, 
-  Send, 
-  Settings, 
+import React, { useState, useEffect } from "react";
+import {
+  Gift,
+  Clock,
+  Plus,
+  Send,
   LogOut,
-  Calendar,
   Package,
   Zap,
   Users,
-  ChevronDown,
   Trash2,
-  Edit,
-  Check,
-  X
-} from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import type { Gift as GiftType, GiftRecipient } from '../../types';
-import './Dashboard.css';
+} from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import type { Gift as GiftType, Recipient } from "../../types";
+import "./Dashboard.css";
+import { inventoryService } from "../../services/inventoryService";
+import Swal from "sweetalert2";
+import { recipientService } from "../../services/recipientService";
+import { giftService } from "../../services/giftService";
 
 const Dashboard: React.FC = () => {
-  const { user, logout } = useAuth();
+  const { admin, logout } = useAuth();
   const navigate = useNavigate();
-  const [selectedRecipient, setSelectedRecipient] = useState<GiftRecipient | null>(null);
-  const [recipients, setRecipients] = useState<GiftRecipient[]>([]);
-  const [gifts, setGifts] = useState<GiftType[]>([]);
-  const [timeToNext, setTimeToNext] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-  const [showAddGift, setShowAddGift] = useState(false);
+
+  const [recipient, setRecipient] = useState<Recipient | null>(null);
+  const [recipientLoading, setRecipientLoading] = useState(false);
   const [showAddRecipient, setShowAddRecipient] = useState(false);
-  const [showRecipientDropdown, setShowRecipientDropdown] = useState(false);
-  const [newGift, setNewGift] = useState({ name: '', description: '', price: 0, category: '' });
-  const [newRecipient, setNewRecipient] = useState({ name: '', email: '' });
+  const [newRecipientName, setNewRecipientName] = useState("");
+  const [addRecipientLoading, setAddRecipientLoading] = useState(false);
+  const [gifts, setGifts] = useState<GiftType[]>([]);
+  const [timeToNext, setTimeToNext] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+  });
+  const [showAddGift, setShowAddGift] = useState(false);
+  const [name, setName] = useState("");
+  const [value, setValue] = useState("");
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [sendGiftLoading, setSendGiftLoading] = useState(false);
 
-  // Initialize dummy data
   useEffect(() => {
-    const dummyRecipients: GiftRecipient[] = [
-      {
-        id: '1',
-        name: 'Sarah Johnson',
-        email: 'sarah@example.com',
-        avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop',
-        isActive: true,
-        lastGiftSent: new Date('2024-01-01'),
-        totalGiftsReceived: 8
-      },
-      {
-        id: '2',
-        name: 'Michael Chen',
-        email: 'michael@example.com',
-        avatar: 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop',
-        isActive: false,
-        lastGiftSent: new Date('2023-12-01'),
-        totalGiftsReceived: 12
-      }
-    ];
-
-    const dummyGifts: GiftType[] = [
-      {
-        id: '1',
-        name: 'Premium Coffee Blend',
-        description: 'Artisanal coffee from Ethiopian highlands',
-        price: 29.99,
-        imageUrl: 'https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?auto=compress&cs=tinysrgb&w=400',
-        category: 'Food & Beverage'
-      },
-      {
-        id: '2',
-        name: 'Wireless Earbuds',
-        description: 'High-quality noise-canceling earbuds',
-        price: 149.99,
-        imageUrl: 'https://images.pexels.com/photos/8000629/pexels-photo-8000629.jpeg?auto=compress&cs=tinysrgb&w=400',
-        category: 'Electronics'
-      },
-      {
-        id: '3',
-        name: 'Skincare Set',
-        description: 'Luxury skincare collection with natural ingredients',
-        price: 89.99,
-        imageUrl: 'https://images.pexels.com/photos/4041392/pexels-photo-4041392.jpeg?auto=compress&cs=tinysrgb&w=400',
-        category: 'Beauty'
-      },
-      {
-        id: '4',
-        name: 'Book Collection',
-        description: 'Curated selection of bestselling novels',
-        price: 39.99,
-        imageUrl: 'https://images.pexels.com/photos/159711/books-bookstore-book-reading-159711.jpeg?auto=compress&cs=tinysrgb&w=400',
-        category: 'Books'
-      }
-    ];
-
-    setRecipients(dummyRecipients);
-    setSelectedRecipient(dummyRecipients[0]);
-    setGifts(dummyGifts);
+    setRecipientLoading(true);
+    recipientService
+      .getRecipient()
+      .then(setRecipient)
+      .catch(() => setRecipient(null))
+      .finally(() => setRecipientLoading(false));
   }, []);
 
-  // Countdown timer
+  useEffect(() => {
+    inventoryService
+      .getAllGifts()
+      .then(setGifts)
+      .catch(() => setError("Failed to load gifts"));
+  }, []);
+
+  const handleAddRecipient = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAddRecipientLoading(true);
+    try {
+      const newRec = await recipientService.addRecipient(newRecipientName);
+      setRecipient(newRec);
+      setShowAddRecipient(false);
+      setNewRecipientName("");
+      await Swal.fire({
+        title: "Recipient Added!",
+        text: `Recipient "${newRec.username}" added successfully.`,
+        icon: "success",
+        confirmButtonText: "Great!",
+        background: "#f8fafc",
+        confirmButtonColor: "#a855f7",
+        timer: 10000,
+        timerProgressBar: true,
+      });
+    } catch (err: any) {
+      Swal.fire({
+        title: "Error",
+        text:
+          err.response?.data?.error || err.message || "Failed to add recipient",
+        icon: "error",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#a855f7",
+      });
+    }
+    setAddRecipientLoading(false);
+  };
+
+  const handleAddGift = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const newGift = await inventoryService.addGift(name, value, message);
+      setGifts((prev) => [...prev, newGift]);
+
+      setName("");
+      setValue("");
+      setMessage("");
+
+      setShowAddGift(false);
+
+      await Swal.fire({
+        title: "Gift Added Successfully!",
+        text: `"${newGift.name}" has been added to your inventory.`,
+        icon: "success",
+        confirmButtonText: "Great!",
+        confirmButtonColor: "#10b981",
+        background: "#f8fafc",
+        timer: 10000,
+        timerProgressBar: true,
+      });
+    } catch (err: any) {
+      setError(err.message || "Failed to add gift");
+
+      Swal.fire({
+        title: "Oops!",
+        text: err.message || "Failed to add gift. Please try again.",
+        icon: "error",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#ef4444",
+        background: "#fef2f2",
+      });
+    }
+
+    setLoading(false);
+  };
+
   useEffect(() => {
     const calculateTimeToNext = () => {
       const now = new Date();
@@ -106,7 +138,9 @@ const Dashboard: React.FC = () => {
       const diff = nextMonth.getTime() - now.getTime();
 
       const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const hours = Math.floor(
+        (diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+      );
       const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
@@ -120,134 +154,123 @@ const Dashboard: React.FC = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate("/login");
   };
 
-  const handleAddGift = () => {
-    if (newGift.name && newGift.description && newGift.price > 0) {
-      const gift: GiftType = {
-        id: Date.now().toString(),
-        name: newGift.name,
-        description: newGift.description,
-        price: newGift.price,
-        imageUrl: 'https://images.pexels.com/photos/264917/pexels-photo-264917.jpeg?auto=compress&cs=tinysrgb&w=400',
-        category: newGift.category || 'General'
-      };
-      setGifts([...gifts, gift]);
-      setNewGift({ name: '', description: '', price: 0, category: '' });
-      setShowAddGift(false);
-    }
-  };
-
-  const handleAddRecipient = () => {
-    if (newRecipient.name && newRecipient.email) {
-      const recipient: GiftRecipient = {
-        id: Date.now().toString(),
-        name: newRecipient.name,
-        email: newRecipient.email,
-        avatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop',
-        isActive: false,
-        totalGiftsReceived: 0
-      };
-      setRecipients([...recipients, recipient]);
-      setNewRecipient({ name: '', email: '' });
-      setShowAddRecipient(false);
-    }
-  };
-
-  const toggleRecipientStatus = () => {
-    if (selectedRecipient) {
-      const updatedRecipients = recipients.map(r =>
-        r.id === selectedRecipient.id ? { ...r, isActive: !r.isActive } : r
-      );
-      setRecipients(updatedRecipients);
-      setSelectedRecipient({ ...selectedRecipient, isActive: !selectedRecipient.isActive });
-    }
-  };
-
-  const sendImmediateGift = () => {
-    if (selectedRecipient) {
-      const updatedRecipients = recipients.map(r =>
-        r.id === selectedRecipient.id
-          ? { ...r, lastGiftSent: new Date(), totalGiftsReceived: r.totalGiftsReceived + 1 }
-          : r
-      );
-      setRecipients(updatedRecipients);
-      setSelectedRecipient({
-        ...selectedRecipient,
-        lastGiftSent: new Date(),
-        totalGiftsReceived: selectedRecipient.totalGiftsReceived + 1
+  const handleToggleGifts = async () => {
+    if (!recipient) return;
+    try {
+      const updated = await recipientService.setGiftsOn(!recipient.isGiftsOn);
+      setRecipient(updated);
+    } catch (err: any) {
+      Swal.fire({
+        title: "Error",
+        text:
+          err.response?.data?.error || err.message || "Failed to toggle gifts",
+        icon: "error",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#a855f7",
       });
     }
   };
 
+  const sendImmediateGift = async () => {
+    if (!recipient) return;
+    setSendGiftLoading(true);
+    try {
+      await giftService.sendGift();
+      Swal.fire({
+        title: "Gift Sent!",
+        text: `A gift was sent to ${recipient.username}.`,
+        icon: "success",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#10b981",
+      });
+    } catch (err: any) {
+      Swal.fire({
+        title: "Error",
+        text: err.response?.data?.error || err.message || "Failed to send gift",
+        icon: "error",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#ef4444",
+      });
+    }
+    setSendGiftLoading(false);
+  };
+
   const removeGift = (giftId: string) => {
-    setGifts(gifts.filter(g => g.id !== giftId));
+    setGifts(gifts.filter((g) => g.id !== giftId));
   };
 
   return (
     <div className="dashboard">
-      {/* Header */}
       <header className="dashboard-header">
         <div className="dashboard-header-content">
           <div className="logo">
             <div className="logo-icon">
               <Gift className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-xl font-bold text-gray-900">GiftDash</h1>
+            <h1 className="text-xl font-bold text-gray-900">PinkyPromises</h1>
           </div>
-          
+
           <div className="user-info">
             <div className="flex items-center space-x-2">
-              <img
-                src={user?.avatar}
-                alt={user?.name}
-                className="user-avatar"
-              />
-              <span className="text-sm font-medium text-gray-700">{user?.name}</span>
+              <span className="text-sm font-medium text-gray-700">
+                {admin?.name}
+              </span>
             </div>
-            <button
-              onClick={handleLogout}
-              className="logout-button"
-            >
+            <button onClick={handleLogout} className="logout-button">
               <LogOut className="w-5 h-5" />
             </button>
           </div>
         </div>
       </header>
 
-      <div className="container" style={{ paddingTop: '2rem', paddingBottom: '2rem' }}>
+      <div
+        className="container"
+        style={{ paddingTop: "2rem", paddingBottom: "2rem" }}
+      >
         {/* Stats Cards */}
         <div className="grid grid-cols-4 gap-6 mb-8">
           <div className="stats-card">
             <div className="stats-card-content">
               <div>
-                <p className="text-sm font-medium text-gray-600">Active Recipients</p>
-                <p className="text-3xl font-bold text-gray-900">{recipients.filter(r => r.isActive).length}</p>
+                <p className="text-sm font-medium text-gray-600">
+                  Active Recipients
+                </p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {recipient ? 1 : 0}
+                </p>
               </div>
               <div className="stats-card-icon green">
                 <Users className="w-6 h-6" />
               </div>
             </div>
           </div>
-
           <div className="stats-card">
             <div className="stats-card-content">
               <div>
-                <p className="text-sm font-medium text-gray-600">Available Gifts</p>
-                <p className="text-3xl font-bold text-gray-900">{gifts.length}</p>
+                <p className="text-sm font-medium text-gray-600">
+                  Available Gifts
+                </p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {gifts.length}
+                </p>
               </div>
               <div className="stats-card-icon purple">
                 <Package className="w-6 h-6" />
               </div>
             </div>
           </div>
-
           <div className="stats-card">
             <div className="stats-card-content">
               <div>
-                <p className="text-sm font-medium text-gray-600">Total Gifts Sent</p>
-                <p className="text-3xl font-bold text-gray-900">{recipients.reduce((sum, r) => sum + r.totalGiftsReceived, 0)}</p>
+                <p className="text-sm font-medium text-gray-600">
+                  Total Gifts Sent
+                </p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {recipient?.giftsReceived || 0}
+                </p>
               </div>
               <div className="stats-card-icon blue">
                 <Send className="w-6 h-6" />
@@ -258,8 +281,15 @@ const Dashboard: React.FC = () => {
           <div className="countdown-card">
             <div className="stats-card-content">
               <div>
-                <p className="text-sm font-medium" style={{ color: 'rgba(255, 165, 0, 0.7)' }}>Next Gift In</p>
-                <p className="text-xl font-bold">{timeToNext.days}d {timeToNext.hours}h {timeToNext.minutes}m</p>
+                <p
+                  className="text-sm font-medium"
+                  style={{ color: "rgba(255, 165, 0, 0.7)" }}
+                >
+                  Next Gift In
+                </p>
+                <p className="text-xl font-bold">
+                  {timeToNext.days}d {timeToNext.hours}h {timeToNext.minutes}m
+                </p>
               </div>
               <div className="countdown-icon">
                 <Clock className="w-6 h-6 text-white" />
@@ -273,140 +303,114 @@ const Dashboard: React.FC = () => {
           {/* Recipient Management */}
           <div className="lg:col-span-1">
             <div className="recipient-card">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-gray-900">Current Recipient</h2>
-                <div className="recipient-dropdown">
-                  <button
-                    onClick={() => setShowRecipientDropdown(!showRecipientDropdown)}
-                    className="recipient-dropdown-button"
-                  >
-                    <ChevronDown className="w-4 h-4 text-gray-500" />
-                  </button>
-                  
-                  {showRecipientDropdown && (
-                    <div className="recipient-dropdown-menu">
-                      {recipients.map((recipient) => (
-                        <button
-                          key={recipient.id}
-                          onClick={() => {
-                            setSelectedRecipient(recipient);
-                            setShowRecipientDropdown(false);
-                          }}
-                          className="recipient-dropdown-item"
-                        >
-                          <img
-                            src={recipient.avatar}
-                            alt={recipient.name}
-                            className="w-8 h-8 rounded-full"
-                          />
-                          <div style={{ textAlign: 'left' }}>
-                            <p className="text-sm font-medium text-gray-900">{recipient.name}</p>
-                            <p className="text-xs text-gray-500">{recipient.email}</p>
-                          </div>
-                        </button>
-                      ))}
-                      <hr style={{ margin: '0.5rem 0' }} />
-                      <button
-                        onClick={() => {
-                          setShowAddRecipient(true);
-                          setShowRecipientDropdown(false);
-                        }}
-                        className="recipient-dropdown-item text-blue-600"
-                      >
-                        <Plus className="w-4 h-4" />
-                        <span className="text-sm font-medium">Add New Recipient</span>
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {selectedRecipient && (
+              <h2 className="text-lg font-semibold text-gray-900 mb-6">
+                Current Recipient
+              </h2>
+              {recipient ? (
                 <div className="space-y-4">
                   <div className="flex items-center space-x-4">
-                    <img
-                      src={selectedRecipient.avatar}
-                      alt={selectedRecipient.name}
-                      className="recipient-avatar"
-                    />
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">{selectedRecipient.name}</h3>
-                      <p className="text-sm text-gray-600">{selectedRecipient.email}</p>
-                      <p className="text-xs text-gray-500">{selectedRecipient.totalGiftsReceived} gifts received</p>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {recipient.username}
+                      </h3>
+                      <p className="text-xs text-gray-500">
+                        {recipient.giftsReceived} gifts received
+                      </p>
                     </div>
                   </div>
-
                   <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <span className="text-sm font-medium text-gray-700">Monthly Gifts</span>
+                    <span className="text-sm font-medium text-gray-700">
+                      Monthly Gifts
+                    </span>
                     <label className="toggle-switch">
                       <input
                         type="checkbox"
-                        checked={selectedRecipient.isActive}
-                        onChange={toggleRecipientStatus}
+                        checked={recipient.isGiftsOn}
+                        onChange={handleToggleGifts}
                       />
                       <div className="toggle-slider"></div>
                     </label>
                   </div>
-
                   <button
                     onClick={sendImmediateGift}
                     className="primary-button"
+                    disabled={sendGiftLoading}
                   >
-                    <Zap className="w-5 h-5" />
-                    <span>Send Gift Now</span>
+                    {sendGiftLoading ? (
+                      <div className="flex items-center space-x-2">
+                        <div className="loading-spinner"></div>
+                        <span>Sending...</span>
+                      </div>
+                    ) : (
+                      <>
+                        <Zap className="w-5 h-5" />
+                        <span>Send Gift Now</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center">
+                  <p className="mb-4 text-gray-600">No recipient found.</p>
+                  <button
+                    onClick={() => setShowAddRecipient(true)}
+                    className="primary-button"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Add Recipient</span>
                   </button>
                 </div>
               )}
             </div>
-
             {/* Add Recipient Modal */}
             {showAddRecipient && (
               <div className="modal-overlay">
                 <div className="modal-content">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Add New Recipient</h3>
-                  <div className="space-y-4">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                    Add New Recipient
+                  </h3>
+                  <form onSubmit={handleAddRecipient} className="space-y-4">
                     <input
                       type="text"
-                      placeholder="Full Name"
-                      value={newRecipient.name}
-                      onChange={(e) => setNewRecipient({ ...newRecipient, name: e.target.value })}
+                      placeholder="Username"
+                      value={newRecipientName}
+                      onChange={(e) => setNewRecipientName(e.target.value)}
                       className="form-input"
+                      required
+                      disabled={addRecipientLoading}
                     />
-                    <input
-                      type="email"
-                      placeholder="Email Address"
-                      value={newRecipient.email}
-                      onChange={(e) => setNewRecipient({ ...newRecipient, email: e.target.value })}
-                      className="form-input"
-                    />
-                  </div>
-                  <div className="button-group">
-                    <button
-                      onClick={() => setShowAddRecipient(false)}
-                      className="secondary-button"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleAddRecipient}
-                      className="primary-button"
-                    >
-                      Add Recipient
-                    </button>
-                  </div>
+                    <div className="button-group">
+                      <button
+                        type="button"
+                        onClick={() => setShowAddRecipient(false)}
+                        className="secondary-button"
+                        disabled={addRecipientLoading}
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="primary-button"
+                        disabled={addRecipientLoading}
+                      >
+                        {addRecipientLoading ? "Adding..." : "Add Recipient"}
+                      </button>
+                    </div>
+                  </form>
                 </div>
               </div>
             )}
           </div>
-
           {/* Gift Inventory */}
           <div className="lg:col-span-2">
             <div className="recipient-card">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-semibold text-gray-900">Gift Inventory</h2>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Gift Inventory
+                </h2>
                 <button
                   onClick={() => setShowAddGift(true)}
-                  className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors flex items-center space-x-2"
+                  className="bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-600 transition-colors flex items-center space-x-2 cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Add Gift</span>
@@ -416,27 +420,31 @@ const Dashboard: React.FC = () => {
               <div className="grid sm:grid-cols-2 gap-4">
                 {gifts.map((gift) => (
                   <div key={gift.id} className="gift-card group">
-                    <div className="flex items-start space-x-4">
-                      <img
-                        src={gift.imageUrl}
-                        alt={gift.name}
-                        className="gift-image"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-semibold text-gray-900 truncate">{gift.name}</h3>
-                        <p className="text-xs text-gray-600 mt-1 line-clamp-2">{gift.description}</p>
-                        <div className="flex items-center justify-between mt-2">
-                          <span className="text-sm font-bold text-green-600">${gift.price}</span>
-                          <button
-                            onClick={() => removeGift(gift.id)}
-                            className="delete-button"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                        <span className="gift-category">
-                          {gift.category}
-                        </span>
+                    <div className="flex flex-col min-w-0">
+                      <h3 className="text-sm font-semibold text-gray-900 truncate">
+                        {gift.name}
+                      </h3>
+                      <p className="text-xs text-gray-600 mt-1">
+                        <strong>Value:</strong> {gift.value}
+                      </p>
+                      {gift.message && (
+                        <p className="text-xs text-gray-600 mt-1">
+                          <strong>Message:</strong> {gift.message}
+                        </p>
+                      )}
+                      {gift.createdAt && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          <strong>Added:</strong>{" "}
+                          {new Date(gift.createdAt).toLocaleString()}
+                        </p>
+                      )}
+                      <div className="flex items-center justify-end mt-2">
+                        <button
+                          onClick={() => removeGift(gift.id)}
+                          className="delete-button"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -447,50 +455,68 @@ const Dashboard: React.FC = () => {
               {showAddGift && (
                 <div className="modal-overlay">
                   <div className="modal-content">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Add New Gift</h3>
-                    <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                      Add New Gift
+                    </h3>
+                    <form onSubmit={handleAddGift} className="space-y-4">
                       <input
                         type="text"
                         placeholder="Gift Name"
-                        value={newGift.name}
-                        onChange={(e) => setNewGift({ ...newGift, name: e.target.value })}
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
                         className="form-input"
-                      />
-                      <textarea
-                        placeholder="Description"
-                        value={newGift.description}
-                        onChange={(e) => setNewGift({ ...newGift, description: e.target.value })}
-                        className="form-textarea"
-                      />
-                      <input
-                        type="number"
-                        placeholder="Price"
-                        value={newGift.price || ''}
-                        onChange={(e) => setNewGift({ ...newGift, price: parseFloat(e.target.value) || 0 })}
-                        className="form-input"
+                        required
+                        disabled={loading}
                       />
                       <input
                         type="text"
-                        placeholder="Category"
-                        value={newGift.category}
-                        onChange={(e) => setNewGift({ ...newGift, category: e.target.value })}
+                        placeholder="Value (e.g. gift card code)"
+                        value={value}
+                        onChange={(e) => setValue(e.target.value)}
                         className="form-input"
+                        required
+                        disabled={loading}
                       />
-                    </div>
-                    <div className="button-group">
-                      <button
-                        onClick={() => setShowAddGift(false)}
-                        className="secondary-button"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={handleAddGift}
-                        className="primary-button"
-                      >
-                        Add Gift
-                      </button>
-                    </div>
+                      <input
+                        type="text"
+                        placeholder="Message (optional)"
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        className="form-input"
+                        disabled={loading}
+                      />
+
+                      {error && (
+                        <div className="error-message bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                          {error}
+                        </div>
+                      )}
+
+                      <div className="button-group">
+                        <button
+                          type="button"
+                          onClick={() => setShowAddGift(false)}
+                          className="secondary-button"
+                          disabled={loading}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          type="submit"
+                          className="primary-button"
+                          disabled={loading}
+                        >
+                          {loading ? (
+                            <div className="flex items-center justify-center space-x-2">
+                              <div className="loading-spinner"></div>
+                              <span>Adding Gift...</span>
+                            </div>
+                          ) : (
+                            "Add Gift"
+                          )}
+                        </button>
+                      </div>
+                    </form>
                   </div>
                 </div>
               )}
