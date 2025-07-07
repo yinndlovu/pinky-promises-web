@@ -46,7 +46,7 @@ const LoginPage: React.FC = () => {
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">PinkyPromises</h1>
           <p className="text-white" style={{ opacity: 0.7 }}>
-            Sign in to Pinky Promises admin dashboard
+            Sign in to the admin dashboard
           </p>
         </div>
 
@@ -145,7 +145,7 @@ const LoginPage: React.FC = () => {
 
         <div className="mt-6 text-center">
           <p className="text-sm" style={{ color: "rgba(255, 255, 255, 0.6)" }}>
-            Forgot password unavailable
+            Made with 🤍 for my Paris
           </p>
         </div>
       </div>
