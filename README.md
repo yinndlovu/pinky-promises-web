@@ -1,3 +1,3 @@
-This is the web part of Pinky Promises 
+This is the web part of Pinky Promises.
 
-Made for admin actions on the application
+Made for admin actions on the application.
