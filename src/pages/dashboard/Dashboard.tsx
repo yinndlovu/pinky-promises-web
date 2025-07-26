@@ -1,3 +1,4 @@
+// external
 import React, { useState, useEffect } from "react";
 import {
   Gift,
@@ -10,19 +11,23 @@ import {
   Users,
   Trash2,
 } from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import type { Gift as GiftType, Recipient } from "../../types";
 import "./Dashboard.css";
-import { inventoryService } from "../../services/inventoryService";
 import Swal from "sweetalert2";
+
+// internal
 import { recipientService } from "../../services/recipientService";
 import { giftService } from "../../services/giftService";
+import { inventoryService } from "../../services/inventoryService";
+import type { Gift as GiftType, Recipient } from "../../types";
+import { useAuth } from "../../context/AuthContext";
 
 const Dashboard: React.FC = () => {
+  // variables
   const { admin, logout } = useAuth();
   const navigate = useNavigate();
 
+  // use states
   const [recipient, setRecipient] = useState<Recipient | null>(null);
   const [showAddRecipient, setShowAddRecipient] = useState(false);
   const [newRecipientName, setNewRecipientName] = useState("");
@@ -37,6 +42,8 @@ const Dashboard: React.FC = () => {
   const [showAddGift, setShowAddGift] = useState(false);
   const [name, setName] = useState("");
   const [value, setValue] = useState("");
+
+  // use states (messages & processing)
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -46,7 +53,7 @@ const Dashboard: React.FC = () => {
     recipientService
       .getRecipient()
       .then(setRecipient)
-      .catch(() => setRecipient(null))
+      .catch(() => setRecipient(null));
   }, []);
 
   useEffect(() => {
@@ -64,6 +71,7 @@ const Dashboard: React.FC = () => {
       setRecipient(newRec);
       setShowAddRecipient(false);
       setNewRecipientName("");
+
       await Swal.fire({
         title: "Recipient Added!",
         text: `Recipient "${newRec.username}" added successfully.`,
@@ -155,7 +163,10 @@ const Dashboard: React.FC = () => {
   };
 
   const handleToggleGifts = async () => {
-    if (!recipient) return;
+    if (!recipient) {
+      return;
+    }
+
     try {
       const updated = await recipientService.setGiftsOn(!recipient.isGiftsOn);
       setRecipient(updated);
@@ -172,7 +183,10 @@ const Dashboard: React.FC = () => {
   };
 
   const sendImmediateGift = async () => {
-    if (!recipient) return;
+    if (!recipient) {
+      return;
+    }
+
     setSendGiftLoading(true);
     try {
       await giftService.sendGift();
@@ -310,6 +324,10 @@ const Dashboard: React.FC = () => {
                       <h3 className="text-lg font-semibold text-gray-900">
                         {recipient.username}
                       </h3>
+                      <p className="text-sm text-pink-600 font-medium mt-1">
+                        Current set favorite present:{" "}
+                        <span className="italic">{recipient?.setGift}</span>
+                      </p>
                       <p className="text-xs text-gray-500">
                         {recipient.giftsReceived} gifts received
                       </p>

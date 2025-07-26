@@ -33,4 +33,5 @@ export interface Recipient {
   username: string;
   isGiftsOn: boolean;
   giftsReceived: number;
+  setGift: string;
 }
