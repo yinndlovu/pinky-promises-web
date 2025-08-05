@@ -1,8 +1,7 @@
 import axios from "axios";
-import type { Recipient } from "../types";
+import type { Recipient, CartItem } from "../types";
 
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -37,5 +36,15 @@ export const recipientService = {
   async getRecipient() {
     const res = await api.get("/recipient/get-recipient");
     return res.data.recipient as Recipient;
+  },
+
+  async getCartItems(): Promise<CartItem[]> {
+    const res = await api.get("/recipient/cart/details");
+    return res.data.cartDetails;
+  },
+
+  async getCartTotal() {
+    const res = await api.get("recipient/cart/details");
+    return res.data.total;
   },
 };

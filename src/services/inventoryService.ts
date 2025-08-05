@@ -14,6 +14,7 @@ export const inventoryService = {
     const res = await api.get("/inventory/all-gifts");
     return res.data.gifts;
   },
+  
   async addGift(name: string, value: string, message?: string): Promise<Gift> {
     const res = await api.post("/inventory/add-gift", { name, value, message });
     return res.data.gift;

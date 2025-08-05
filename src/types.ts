@@ -35,3 +35,9 @@ export interface Recipient {
   giftsReceived: number;
   setGift: string;
 }
+
+export interface CartItem {
+  id: string;
+  item: string;
+  value: number;
+}

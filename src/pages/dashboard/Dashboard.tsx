@@ -33,6 +33,7 @@ const Dashboard: React.FC = () => {
   const [newRecipientName, setNewRecipientName] = useState("");
   const [addRecipientLoading, setAddRecipientLoading] = useState(false);
   const [gifts, setGifts] = useState<GiftType[]>([]);
+  const [cartTotal, setCartTotal] = useState(0);
   const [timeToNext, setTimeToNext] = useState({
     days: 0,
     hours: 0,
@@ -62,6 +63,13 @@ const Dashboard: React.FC = () => {
       .then(setGifts)
       .catch(() => setError("Failed to load gifts"));
   }, []);
+
+  useEffect(() => {
+    recipientService
+      .getCartTotal()
+      .then(setCartTotal)
+      .catch(() => setCartTotal(0));
+  });
 
   const handleAddRecipient = async (e: React.FormEvent) => {
     e.preventDefault();
