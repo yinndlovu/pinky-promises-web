@@ -44,7 +44,7 @@ export const recipientService = {
   },
 
   async getCartTotal() {
-    const res = await api.get("recipient/cart/details");
+    const res = await api.get("/recipient/cart/details");
     return res.data.total;
   },
 };

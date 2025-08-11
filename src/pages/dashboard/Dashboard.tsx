@@ -19,7 +19,7 @@ import Swal from "sweetalert2";
 import { recipientService } from "../../services/recipientService";
 import { giftService } from "../../services/giftService";
 import { inventoryService } from "../../services/inventoryService";
-import type { Gift as GiftType, Recipient } from "../../types";
+import type { CartItem, Gift as GiftType, Recipient } from "../../types";
 import { useAuth } from "../../context/AuthContext";
 
 const Dashboard: React.FC = () => {
@@ -33,6 +33,7 @@ const Dashboard: React.FC = () => {
   const [newRecipientName, setNewRecipientName] = useState("");
   const [addRecipientLoading, setAddRecipientLoading] = useState(false);
   const [gifts, setGifts] = useState<GiftType[]>([]);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [cartTotal, setCartTotal] = useState(0);
   const [timeToNext, setTimeToNext] = useState({
     days: 0,
@@ -70,6 +71,10 @@ const Dashboard: React.FC = () => {
       .then(setCartTotal)
       .catch(() => setCartTotal(0));
   });
+
+  useEffect(() => {
+    recipientService.getCartItems().then(setCartItems);
+  }, []);
 
   const handleAddRecipient = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -332,10 +337,18 @@ const Dashboard: React.FC = () => {
                       <h3 className="text-lg font-semibold text-gray-900">
                         {recipient.username}
                       </h3>
-                      <p className="text-sm text-pink-600 font-medium mt-1">
-                        Current set favorite present:{" "}
-                        <span className="italic">{recipient?.setGift}</span>
-                      </p>
+                      {recipient?.setGift ? (
+                        <p className="text-sm text-pink-600 font-medium mt-1">
+                          Current set favorite present:{" "}
+                          <span className="italic">
+                            {recipient?.setGift || "Not set yet"}
+                          </span>
+                        </p>
+                      ) : (
+                        <p className="text-sm text-pink-600 font-medium mt-1">
+                          Recipient hasn't set a favorite present yet
+                        </p>
+                      )}
                       <p className="text-xs text-gray-500">
                         {recipient.giftsReceived} gifts received
                       </p>
@@ -385,6 +398,43 @@ const Dashboard: React.FC = () => {
                 </div>
               )}
             </div>
+
+            {/* Cart */}
+            <div className="lg:col-span-1 mt-8">
+              <div className="recipient-card">
+                <h2 className="text-lg font-semibold text-gray-900 mb-6">
+                  Current Cart
+                </h2>
+                {cartItems && cartItems.length > 0 ? (
+                  <div className="space-y-4">
+                    <ul className="divide-y divide-gray-200">
+                      {cartItems.map((item) => (
+                        <li key={item.id} className="py-2 flex justify-between">
+                          <span className="text-gray-800">{item.item}</span>
+                          <span className="text-pink-600 font-medium">
+                            {item.value}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                      <span className="text-sm font-medium text-gray-700">
+                        Total
+                      </span>
+                      <span className="text-lg font-semibold text-gray-900">
+                        {cartTotal}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center">
+                    <p className="mb-4 text-gray-600">Recipient's cart is empty</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Add Recipient Modal */}
             {showAddRecipient && (
               <div className="modal-overlay">
