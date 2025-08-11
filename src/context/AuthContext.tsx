@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import type { ReactNode } from 'react';
-import type { Admin } from '../types';
-import { adminAuthService } from '../services/adminAuthService';
+import React, { createContext, useContext, useState, useEffect } from "react";
+import type { ReactNode } from "react";
+import type { Admin } from "../types";
+import { adminAuthService } from "../services/adminAuthService";
 
 interface AuthContextType {
   admin: Admin | null;
@@ -16,7 +16,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
@@ -30,7 +30,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    adminAuthService.getCurrentAdmin()
+    adminAuthService
+      .getCurrentAdmin()
       .then((admin) => setAdmin(admin))
       .catch(() => setAdmin(null));
   }, []);
@@ -42,7 +43,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setAdmin(adminData);
       }
     } catch (error) {
-      console.error('Auth check failed:', error);
+      console.error("Auth check failed:", error);
       setAdmin(null);
     }
   };
@@ -53,23 +54,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
-    
+
     try {
       const response = await adminAuthService.login(email, password);
-      
+
       const adminData: Admin = {
         id: response.adminId,
         adminId: response.adminId,
         name: response.name,
         email: response.email,
       };
-      
+
       setAdmin(adminData);
       setIsLoading(false);
       return true;
     } catch (error: any) {
       setIsLoading(false);
-      console.error('Login error:', error);
+      console.error("Login error:", error);
       throw error;
     }
   };
@@ -78,14 +79,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       await adminAuthService.logout();
     } catch (error) {
-      console.error('Logout error:', error);
+      console.error("Logout error:", error);
     } finally {
       setAdmin(null);
     }
   };
 
   return (
-    <AuthContext.Provider value={{ admin, login, logout, isLoading, checkAuth }}>
+    <AuthContext.Provider
+      value={{ admin, login, logout, isLoading, checkAuth }}
+    >
       {children}
     </AuthContext.Provider>
   );
