@@ -135,7 +135,7 @@ const LoginPage: React.FC = () => {
             {isLoading ? (
               <div className="flex items-center justify-center">
                 <div className="loading-spinner"></div>
-                Signing in...
+                Signing In...
               </div>
             ) : (
               "Sign In"
