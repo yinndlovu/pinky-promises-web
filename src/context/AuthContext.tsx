@@ -29,6 +29,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    adminAuthService.getCurrentAdmin()
+      .then((admin) => setAdmin(admin))
+      .catch(() => setAdmin(null));
+  }, []);
+
   const checkAuth = async () => {
     try {
       const adminData = await adminAuthService.getCurrentAdmin();
