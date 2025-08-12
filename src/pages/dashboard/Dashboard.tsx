@@ -403,7 +403,7 @@ const Dashboard: React.FC = () => {
             <div className="lg:col-span-1 mt-8">
               <div className="recipient-card">
                 <h2 className="text-lg font-semibold text-gray-900 mb-6">
-                  Current Cart
+                  Recipient Cart
                 </h2>
                 {cartItems && cartItems.length > 0 ? (
                   <div className="space-y-4">
