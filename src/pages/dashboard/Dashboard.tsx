@@ -21,6 +21,7 @@ import { giftService } from "../../services/giftService";
 import { inventoryService } from "../../services/inventoryService";
 import type { CartItem, Gift as GiftType, Recipient } from "../../types";
 import { useAuth } from "../../context/AuthContext";
+import { remindersService } from "../../services/remindersService";
 
 const Dashboard: React.FC = () => {
   // variables
@@ -44,12 +45,14 @@ const Dashboard: React.FC = () => {
   const [showAddGift, setShowAddGift] = useState(false);
   const [name, setName] = useState("");
   const [value, setValue] = useState("");
+  const [lastReminderDate, setLastReminderDate] = useState<string | null>(null);
 
   // use states (messages & processing)
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [sendGiftLoading, setSendGiftLoading] = useState(false);
+  const [sendRemindersLoading, setSendRemindersLoading] = useState(false);
 
   useEffect(() => {
     recipientService
@@ -74,6 +77,13 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     recipientService.getCartItems().then(setCartItems);
+  }, []);
+
+  useEffect(() => {
+    remindersService
+      .getLastReminderDate()
+      .then((date) => setLastReminderDate(date))
+      .catch(() => setLastReminderDate(null));
   }, []);
 
   const handleAddRecipient = async (e: React.FormEvent) => {
@@ -224,6 +234,32 @@ const Dashboard: React.FC = () => {
 
   const removeGift = (giftId: string) => {
     setGifts(gifts.filter((g) => g.id !== giftId));
+  };
+
+  const sendReminders = async () => {
+    setSendRemindersLoading(true);
+    try {
+      await remindersService.sendReminders();
+      Swal.fire({
+        title: "Reminders Sent!",
+        text: `Reminders were sent to all users.`,
+        icon: "success",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#10b981",
+      });
+    } catch (err: any) {
+      Swal.fire({
+        title: "Error",
+        text:
+          err.response?.data?.error ||
+          err.message ||
+          "Failed to send reminders",
+        icon: "error",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#ef4444",
+      });
+    }
+    setSendRemindersLoading(false);
   };
 
   return (
@@ -429,7 +465,9 @@ const Dashboard: React.FC = () => {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center">
-                    <p className="mb-4 text-gray-600">Recipient's cart is empty</p>
+                    <p className="mb-4 text-gray-600">
+                      Recipient's cart is empty
+                    </p>
                   </div>
                 )}
               </div>
@@ -594,6 +632,44 @@ const Dashboard: React.FC = () => {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+        {/* Send Reminders */}
+        <div className="mt-8">
+          <div className="recipient-card">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-lg font-semibold text-gray-900">
+                Send Reminders
+              </h2>
+              <span className="text-sm text-gray-500">
+                Last Sent:{" "}
+                {lastReminderDate
+                  ? new Date(lastReminderDate).toLocaleString()
+                  : "Never"}
+              </span>
+            </div>
+
+            <p className="text-sm text-gray-600 mb-4">
+              Send reminders to all users.
+            </p>
+
+            <button
+              onClick={sendReminders}
+              className="primary-button"
+              disabled={sendRemindersLoading}
+            >
+              {sendRemindersLoading ? (
+                <div className="flex items-center space-x-2">
+                  <div className="loading-spinner"></div>
+                  <span>Sending Reminders...</span>
+                </div>
+              ) : (
+                <>
+                  <Clock className="w-5 h-5" />
+                  <span>Send Reminders</span>
+                </>
+              )}
+            </button>
           </div>
         </div>
       </div>
