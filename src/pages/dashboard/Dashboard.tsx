@@ -73,7 +73,7 @@ const Dashboard: React.FC = () => {
       .getCartTotal()
       .then(setCartTotal)
       .catch(() => setCartTotal(0));
-  });
+  }, [cartItems]);
 
   useEffect(() => {
     recipientService.getCartItems().then(setCartItems);
