@@ -1,6 +1,8 @@
+// external
 import axios from "axios";
 import type { LoginResponse, Admin } from "../types";
 
+// internal
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL;
 
@@ -12,6 +14,7 @@ const api = axios.create({
   withCredentials: true,
 });
 
+// service for the admin auth
 export const adminAuthService = {
   async login(email: string, password: string): Promise<LoginResponse> {
     try {

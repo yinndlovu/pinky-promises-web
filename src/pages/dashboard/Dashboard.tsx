@@ -54,6 +54,7 @@ const Dashboard: React.FC = () => {
   const [sendGiftLoading, setSendGiftLoading] = useState(false);
   const [sendRemindersLoading, setSendRemindersLoading] = useState(false);
 
+  // use effects
   useEffect(() => {
     recipientService
       .getRecipient()
@@ -86,6 +87,7 @@ const Dashboard: React.FC = () => {
       .catch(() => setLastReminderDate(null));
   }, []);
 
+  // handlers
   const handleAddRecipient = async (e: React.FormEvent) => {
     e.preventDefault();
     setAddRecipientLoading(true);
@@ -159,6 +161,7 @@ const Dashboard: React.FC = () => {
     setLoading(false);
   };
 
+  // use effects
   useEffect(() => {
     const calculateTimeToNext = () => {
       const now = new Date();
@@ -180,6 +183,7 @@ const Dashboard: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // handlers
   const handleLogout = () => {
     logout();
     navigate("/login");
@@ -205,6 +209,7 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  // send immediate gift
   const sendImmediateGift = async () => {
     if (!recipient) {
       return;
@@ -232,10 +237,12 @@ const Dashboard: React.FC = () => {
     setSendGiftLoading(false);
   };
 
+  // remove gift
   const removeGift = (giftId: string) => {
     setGifts(gifts.filter((g) => g.id !== giftId));
   };
 
+  // send reminders
   const sendReminders = async () => {
     setSendRemindersLoading(true);
     try {

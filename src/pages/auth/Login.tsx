@@ -1,26 +1,34 @@
+// external
 import React, { useState, useEffect } from "react";
 import { Gift, Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
 import { useNavigate, useLocation } from "react-router-dom";
+
+// internal
+import { useAuth } from "../../context/AuthContext";
 import "./Login.css";
 
 const LoginPage: React.FC = () => {
+  // use states
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+
+  // variables
   const { login, isLoading, admin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const from = location.state?.from?.pathname || "/dashboard";
 
+  // use effects
   useEffect(() => {
     if (admin) {
       navigate(from, { replace: true });
     }
   }, [admin, navigate, from]);
 
+  // handlers
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -145,7 +153,7 @@ const LoginPage: React.FC = () => {
 
         <div className="mt-6 text-center">
           <p className="text-sm" style={{ color: "rgba(255, 255, 255, 0.6)" }}>
-            Made with 🤍 for my Paris
+            Made with 🤍 my Paris
           </p>
         </div>
       </div>

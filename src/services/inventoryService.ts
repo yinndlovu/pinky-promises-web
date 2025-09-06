@@ -1,6 +1,8 @@
+// external
 import axios from "axios";
 import type { Gift } from "../types";
 
+// internal
 const API_BASE_URL =
   import.meta.env.VITE_API_BASE_URL;
 
@@ -9,6 +11,7 @@ const api = axios.create({
   withCredentials: true,
 });
 
+// service for the inventory
 export const inventoryService = {
   async getAllGifts(): Promise<Gift[]> {
     const res = await api.get("/inventory/all-gifts");

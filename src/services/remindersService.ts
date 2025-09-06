@@ -1,5 +1,7 @@
+// external
 import axios from "axios";
 
+// internal
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const api = axios.create({
@@ -7,6 +9,7 @@ const api = axios.create({
   withCredentials: true,
 });
 
+// service for the reminders
 export const remindersService = {
   async sendReminders() {
     const res = await api.post("/reminder/send");

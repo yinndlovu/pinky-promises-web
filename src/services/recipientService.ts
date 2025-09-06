@@ -1,6 +1,8 @@
+// external
 import axios from "axios";
 import type { Recipient, CartItem } from "../types";
 
+// internal
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const api = axios.create({
@@ -8,6 +10,7 @@ const api = axios.create({
   withCredentials: true,
 });
 
+// service for the recipient
 export const recipientService = {
   async addRecipient(username: string, isGiftsOn = true, giftsReceived = 0) {
     const res = await api.post("/recipient/add-recipient", {
