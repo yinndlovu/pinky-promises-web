@@ -58,3 +58,14 @@ export interface CreateAppVersionRequest {
   notes?: string;
   mandatory: boolean;
 }
+
+export interface NotificationRequest {
+  title: string;
+  body: string;
+  type: "custom" | "reminder" | "gift" | "system";
+}
+
+export interface NotificationResponse {
+  count: number;
+  notifications: any[];
+}

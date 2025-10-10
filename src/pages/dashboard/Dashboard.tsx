@@ -25,6 +25,7 @@ import { remindersService } from "../../services/remindersService";
 
 // content
 import AppVersionManager from "../../components/AppVersionManager";
+import NotificationManager from "../../components/NotificationManager";
 
 const Dashboard: React.FC = () => {
   // variables
@@ -682,6 +683,11 @@ const Dashboard: React.FC = () => {
             </button>
           </div>
         </div>
+
+        <div className="mt-8">
+          <NotificationManager />
+        </div>
+
         <div className="mt-8">
           <AppVersionManager />
         </div>
