@@ -23,6 +23,9 @@ import type { CartItem, Gift as GiftType, Recipient } from "../../types";
 import { useAuth } from "../../context/AuthContext";
 import { remindersService } from "../../services/remindersService";
 
+// content
+import AppVersionManager from "../../components/AppVersionManager";
+
 const Dashboard: React.FC = () => {
   // variables
   const { admin, logout } = useAuth();
@@ -678,6 +681,9 @@ const Dashboard: React.FC = () => {
               )}
             </button>
           </div>
+        </div>
+        <div className="mt-8">
+          <AppVersionManager />
         </div>
       </div>
     </div>

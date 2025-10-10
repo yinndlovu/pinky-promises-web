@@ -41,3 +41,20 @@ export interface CartItem {
   item: string;
   value: number;
 }
+
+export interface AppVersion {
+  id: string;
+  version: string;
+  downloadUrl: string;
+  notes?: string | null;
+  mandatory: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateAppVersionRequest {
+  version: string;
+  downloadUrl: string;
+  notes?: string;
+  mandatory: boolean;
+}
