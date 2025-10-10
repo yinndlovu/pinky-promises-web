@@ -52,7 +52,7 @@ export const appVersionService = {
 
   async deleteAppVersion(id: string): Promise<void> {
     try {
-      await api.delete(`/admin/version/delete/${id}`);
+      await api.delete(`/admin/version/${id}/delete`);
     } catch (error: any) {
       if (error.response?.data?.error) {
         throw new Error(error.response.data.error);
