@@ -16,7 +16,7 @@ export const notificationService = {
     notificationData: NotificationRequest
   ): Promise<NotificationResponse> {
     try {
-      const response = await api.post("/notification/send", notificationData);
+      const response = await api.post("/notifications/send", notificationData);
       return response.data;
     } catch (error: any) {
       if (error.response?.data?.error) {
