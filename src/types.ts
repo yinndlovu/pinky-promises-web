@@ -70,7 +70,6 @@ export interface NotificationResponse {
   notifications: any[];
 }
 
-// Period Admin Types
 export interface PeriodAid {
   id: number;
   problem: string;

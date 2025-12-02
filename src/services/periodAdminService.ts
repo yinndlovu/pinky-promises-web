@@ -15,12 +15,12 @@ const api = axios.create({
 // service for period admin operations
 export const periodAdminService = {
   async getEnums() {
-    const res = await api.get("/period/enums");
+    const res = await api.get("/admin/period/enums");
     return res.data;
   },
 
   async getAdminAids() {
-    const res = await api.get("/period/aids");
+    const res = await api.get("/admin/period/aids");
     return res.data;
   },
 
@@ -31,7 +31,7 @@ export const periodAdminService = {
     description?: string;
     priority?: number;
   }) {
-    const res = await api.post("/period/aid", data);
+    const res = await api.post("/admin/period/aid", data);
     return res.data;
   },
 
@@ -45,17 +45,17 @@ export const periodAdminService = {
       priority?: number;
     }
   ) {
-    const res = await api.put(`/period/aid/${aidId}`, data);
+    const res = await api.put(`/admin/period/aid/${aidId}`, data);
     return res.data;
   },
 
   async deleteAdminAid(aidId: number) {
-    const res = await api.delete(`/period/aid/${aidId}`);
+    const res = await api.delete(`/admin/period/aid/${aidId}`);
     return res.data;
   },
 
   async getAdminLookouts() {
-    const res = await api.get("/period/lookouts");
+    const res = await api.get("/admin/period/lookouts");
     return res.data;
   },
 
@@ -67,7 +67,7 @@ export const periodAdminService = {
     showUntilDate?: string;
     priority?: number;
   }) {
-    const res = await api.post("/period/lookout", data);
+    const res = await api.post("/admin/period/lookout", data);
     return res.data;
   },
 
@@ -82,12 +82,12 @@ export const periodAdminService = {
       priority?: number;
     }
   ) {
-    const res = await api.put(`/period/lookout/${lookoutId}`, data);
+    const res = await api.put(`/admin/period/lookout/${lookoutId}`, data);
     return res.data;
   },
 
   async deleteAdminLookout(lookoutId: number) {
-    const res = await api.delete(`/period/lookout/${lookoutId}`);
+    const res = await api.delete(`/admin/period/lookout/${lookoutId}`);
     return res.data;
   },
 
@@ -98,12 +98,12 @@ export const periodAdminService = {
     defaultCycleLength?: number;
     defaultPeriodLength?: number;
   }) {
-    const res = await api.post("/period/user/register", data);
+    const res = await api.post("/admin/period/user/register", data);
     return res.data;
   },
 
   async getAllPeriodUsers() {
-    const res = await api.get("/period/users");
+    const res = await api.get("/admin/period/users");
     return res.data;
   },
 
@@ -116,12 +116,12 @@ export const periodAdminService = {
       isActive?: boolean;
     }
   ) {
-    const res = await api.put(`/period/user/${userId}`, data);
+    const res = await api.put(`/admin/period/user/${userId}`, data);
     return res.data;
   },
 
   async deactivatePeriodUser(userId: number) {
-    const res = await api.delete(`/period/user/${userId}`);
+    const res = await api.delete(`/admin/period/user/${userId}`);
     return res.data;
   },
 };
