@@ -69,3 +69,49 @@ export interface NotificationResponse {
   count: number;
   notifications: any[];
 }
+
+// Period Admin Types
+export interface PeriodAid {
+  id: number;
+  problem: string;
+  category: string;
+  title: string;
+  description?: string;
+  priority: number;
+  isAdminCreated: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface PeriodLookout {
+  id: number;
+  userId: number;
+  title: string;
+  description?: string;
+  showOnDate: string;
+  showUntilDate?: string;
+  priority: number;
+  createdAt?: string;
+  updatedAt?: string;
+  User?: {
+    id: number;
+    name?: string;
+    username?: string;
+  };
+}
+
+export interface PeriodUser {
+  id: number;
+  userId: number;
+  username: string;
+  defaultCycleLength?: number;
+  defaultPeriodLength?: number;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface PeriodEnums {
+  problems: string[];
+  categories: string[];
+}
