@@ -13,7 +13,7 @@ const api = axios.create({
 // service for gifts
 export const giftService = {
   async sendGift() {
-    const res = await api.post("/gift/send-gift");
+    const res = await api.post("/gift/send");
     return res.data;
   },
 };

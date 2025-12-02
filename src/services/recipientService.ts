@@ -13,7 +13,7 @@ const api = axios.create({
 // service for the recipient
 export const recipientService = {
   async addRecipient(username: string, isGiftsOn = true, giftsReceived = 0) {
-    const res = await api.post("/recipient/add-recipient", {
+    const res = await api.post("/recipient/add", {
       username,
       isGiftsOn,
       giftsReceived,
@@ -37,17 +37,17 @@ export const recipientService = {
   },
 
   async getRecipient() {
-    const res = await api.get("/recipient/get-recipient");
+    const res = await api.get("/recipient");
     return res.data.recipient as Recipient;
   },
 
   async getCartItems(): Promise<CartItem[]> {
-    const res = await api.get("/recipient/cart/details");
+    const res = await api.get("/recipient/cart");
     return res.data.cartDetails;
   },
 
   async getCartTotal() {
-    const res = await api.get("/recipient/cart/details");
+    const res = await api.get("/recipient/cart");
     return res.data.total;
   },
 };

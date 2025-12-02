@@ -34,13 +34,7 @@ const AppVersionManager: React.FC = () => {
       const versionsData = await appVersionService.getAllAppVersions();
       setVersions(versionsData);
     } catch (error: any) {
-      Swal.fire({
-        title: "Error",
-        text: error.message || "Failed to load app versions",
-        icon: "error",
-        confirmButtonText: "OK",
-        confirmButtonColor: "#ef4444",
-      });
+      console.error("Error loading app versions:", error);
     }
     setLoading(false);
   };
@@ -69,6 +63,7 @@ const AppVersionManager: React.FC = () => {
         background: "#f8fafc",
       });
     } catch (error: any) {
+      console.error("Error creating app version:", error);
       Swal.fire({
         title: "Error",
         text: error.message || "Failed to create app version",

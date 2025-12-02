@@ -14,7 +14,7 @@ const api = axios.create({
 // service for the inventory
 export const inventoryService = {
   async getAllGifts(): Promise<Gift[]> {
-    const res = await api.get("/inventory/all-gifts");
+    const res = await api.get("/inventory");
     return res.data.gifts;
   },
   
