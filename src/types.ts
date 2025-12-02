@@ -108,6 +108,11 @@ export interface PeriodUser {
   isActive: boolean;
   createdAt?: string;
   updatedAt?: string;
+  User?: {
+    id: number;
+    name?: string;
+    username?: string;
+  };
 }
 
 export interface PeriodEnums {

@@ -1053,10 +1053,10 @@ const PeriodAdminManager: React.FC = () => {
           ) : (
             <div className="period-admin-grid">
               {users.map((user) => (
-                <div key={user.id} className="period-admin-card">
+                <div key={user.User?.id} className="period-admin-card">
                   <div className="period-admin-card-header">
                     <h4 className="font-semibold text-gray-900">
-                      {user.username}
+                      {user.User?.name || user.User?.username}
                     </h4>
                     <div className="period-admin-card-actions">
                       <button
