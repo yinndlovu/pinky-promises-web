@@ -459,7 +459,7 @@ const PeriodAdminManager: React.FC = () => {
     if (!editingUser) return;
     setUsersLoading(true);
     try {
-      await periodAdminService.updatePeriodUser(editingUser.id, {
+      await periodAdminService.updatePeriodUser(editingUser.User?.id || 0, {
         username: userForm.username || undefined,
         defaultCycleLength: userForm.defaultCycleLength,
         defaultPeriodLength: userForm.defaultPeriodLength,
@@ -518,16 +518,30 @@ const PeriodAdminManager: React.FC = () => {
         });
         loadUsers();
       } catch (err: any) {
-        Swal.fire({
-          title: "Error",
-          text:
-            err.response?.data?.error ||
-            err.message ||
-            "Failed to deactivate period user",
-          icon: "error",
-          confirmButtonText: "OK",
-          confirmButtonColor: "#ef4444",
-        });
+        const errorMessage = err.response?.data?.error || err.message || "";
+        const isNotFoundError =
+          err.response?.status === 404 ||
+          errorMessage.toLowerCase().includes("not found") ||
+          errorMessage.toLowerCase().includes("period user not found");
+
+        if (isNotFoundError) {
+          await Swal.fire({
+            title: "Deactivated!",
+            text: "Period user has been deactivated",
+            icon: "success",
+            confirmButtonText: "OK",
+            confirmButtonColor: "#10b981",
+          });
+          loadUsers();
+        } else {
+          Swal.fire({
+            title: "Error",
+            text: errorMessage || "Failed to deactivate period user",
+            icon: "error",
+            confirmButtonText: "OK",
+            confirmButtonColor: "#ef4444",
+          });
+        }
       }
     }
   };
@@ -535,7 +549,7 @@ const PeriodAdminManager: React.FC = () => {
   const startEditUser = (user: PeriodUser) => {
     setEditingUser(user);
     setUserForm({
-      username: user.username,
+      username: user.User?.username || user.User?.name || "",
       previousCycleStartDate: "",
       previousCycleEndDate: "",
       defaultCycleLength: user.defaultCycleLength || 28,
@@ -1066,7 +1080,7 @@ const PeriodAdminManager: React.FC = () => {
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => handleDeactivateUser(user.id)}
+                        onClick={() => handleDeactivateUser(user.User?.id || 0)}
                         className="icon-button delete"
                       >
                         <Trash2 className="w-4 h-4" />

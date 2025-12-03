@@ -101,8 +101,6 @@ export interface PeriodLookout {
 
 export interface PeriodUser {
   id: number;
-  userId: number;
-  username: string;
   defaultCycleLength?: number;
   defaultPeriodLength?: number;
   isActive: boolean;
