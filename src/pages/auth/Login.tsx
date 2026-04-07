@@ -153,7 +153,7 @@ const LoginPage: React.FC = () => {
 
         <div className="mt-6 text-center">
           <p className="text-sm" style={{ color: "rgba(255, 255, 255, 0.6)" }}>
-            Made with 🤍 for Paris
+            Made for the funzies
           </p>
         </div>
       </div>
